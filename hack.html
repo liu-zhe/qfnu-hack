@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>请假信息填写</title>
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #generatedUrl {
+            word-break: break-all;
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        #qrcode img {
+            border: 1px solid #ddd;
+            padding: 15px;
+        }
+
+        #downloadQR {
+            display: block;
+            margin: 10px auto;
+            background-color: #28a745;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .form-section {
+            flex: 1;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-section {
+            flex: 1;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #previewCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+</head>
+
+<body>
+    <!-- 添加免责声明区块 -->
+    <div
+        style="background-color: #fff3cd; color: #856404; padding: 15px; margin: 10px; border: 1px solid #ffeeba; border-radius: 4px;">
+        <h4 style="margin: 0 0 10px 0;">免责声明</h4>
+        <p style="margin: 0;">
+            本工具仅供学习和测试使用。使用本工具生成的任何内容均由使用者承担全部责任。请勿将本工具用于任何违法或不当用途。使用本工具即表示您同意此免责声明的全部内容。
+        </p>
+    </div>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>请假信息填写</h2>
+            <form id="leaveForm">
+                <div class="form-group">
+                    <label>请假人：</label>
+                    <input type="text" name="studentName" required>
+                </div>
+                <div class="form-group">
+                    <label>学号：</label>
+                    <input type="text" name="studentId" required>
+                </div>
+                <div class="form-group">
+                    <label>请假类型：</label>
+                    <select name="leaveType" required>
+                        <option value="病假">病假</option>
+                        <option value="事假">事假</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>是否离校：</label>
+                    <select name="isLeaveSchool" required>
+                        <option value="是">是</option>
+                        <option value="否">否</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>请假原因：</label>
+                    <input type="text" name="leaveReason" required>
+                </div>
+                <div class="form-group">
+                    <label>原因描述：</label>
+                    <input type="text" name="reasonDescription" required>
+                </div>
+                <div class="form-group">
+                    <label>目的地：</label>
+                    <input type="text" name="destination" required>
+                </div>
+                <div class="form-group">
+                    <label>开始时间：</label>
+                    <input type="date" name="startTime" required>
+                </div>
+                <div class="form-group">
+                    <label>结束时间：</label>
+                    <input type="date" name="endTime" required>
+                </div>
+                <div class="form-group">
+                    <label>节次：</label>
+                    <input type="text" name="period" required>
+                </div>
+                <div class="form-group">
+                    <label>审核人名称：</label>
+                    <input type="text" name="reviewTeacher" required>
+                </div>
+            </form>
+        </div>
+
+        <div class="preview-section">
+            <h2>预览</h2>
+            <div class="preview-container">
+                <canvas id="previewCanvas"></canvas>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="downloadImage()">下载请假条</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="generatedUrl">
+        <div id="qrcode"></div>
+    </div>
+
+    <script>
+        // 修改下载功能
+        function downloadImage() {
+            const canvas = document.getElementById('previewCanvas');
+            const link = document.createElement('a');
+            link.download = '请假条.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // 修改提交处理代码
+        document.getElementById('leaveForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const params = new URLSearchParams();
+
+            for (let pair of formData.entries()) {
+                if (pair[0].includes('time')) {
+                    const date = new Date(pair[1]);
+                    const dateString = date.toLocaleDateString('zh-CN');
+                    params.append(pair[0], dateString);
+                } else {
+                    params.append(pair[0], pair[1]);
+                }
+            }
+
+            params.append('reviewStatus', '已通过');
+            const baseUrl = `${window.location.origin}/qfnuqj.html`;
+            const url = `${baseUrl}?${params.toString()}`;
+
+            // 生成二维码 (保持原有逻辑但移除下载按钮)
+            new QRCode(document.getElementById("qrcode"), {
+                text: url,
+                width: 512,
+                height: 512,
+                typeNumber: 5,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L,
+                margin: 4
+            });
+
+            // 生成预览图
+            generateLeaveImage(true);
+        });
+
+        function generateLeaveImage(isPreview = false) {
+            // 创建或获取 canvas 元素
+            const canvas = isPreview ?
+                document.getElementById('previewCanvas') :
+                document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // 设置 canvas 大小
+            canvas.width = 851;
+            canvas.height = 1822;
+
+            // 加载背景图片
+            const img = new Image();
+            img.onload = function () {
+                // 绘制背景
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // 设置文字样式
+                ctx.font = '35px Microsoft YaHei';
+                ctx.fillStyle = '#000';
+
+                // 获取表单数据
+                const formData = new FormData(document.getElementById('leaveForm'));
+
+                // 生成URL用于二维码
+                const params = new URLSearchParams();
+                for (let pair of formData.entries()) {
+                    params.append(pair[0], pair[1]);
+                }
+                params.append('reviewStatus', '已通过');
+                const baseUrl = `${window.location.origin}/qfnuqj.html`;
+                const url = `${baseUrl}?${params.toString()}`;
+
+                // 绘制文字
+                const textItems = [
+                    { text: ` ${formData.get('studentName')}`, y: 326 },
+                    { text: ` ${formData.get('studentId')}`, y: 393 },
+                    { text: ` ${formData.get('leaveType')}`, y: 459 },
+                    { text: ` ${formData.get('isLeaveSchool')}`, y: 523 },
+                    { text: ` ${formData.get('leaveReason')}`, y: 590 },
+                    { text: ` ${formData.get('reasonDescription')}`, y: 657 },
+                    { text: ` ${formData.get('destination')}`, y: 724 },
+                    { text: ` ${formData.get('startTime')}`, y: 789 },
+                    { text: ` ${formData.get('endTime')}`, y: 856 },
+                    { text: ` ${formData.get('period')}`, y: 919 },
+                    { text: `审核通过`, y: 988 },
+                    { text: ` ${formData.get('reviewTeacher')}`, y: 1053 }
+                ];
+
+                textItems.forEach(item => {
+                    ctx.fillText(item.text, 322, item.y);
+                });
+
+                // 创建临时二维码
+                const tempQR = document.createElement('div');
+                tempQR.style.display = 'none';
+                document.body.appendChild(tempQR);
+
+                // 生成二维码
+                new QRCode(tempQR, {
+                    text: url,
+                    width: 325,
+                    height: 325,
+                    typeNumber: 10,    // 保持与大二维码一致
+                    version: 5,        // 指定版本
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.L,
+                    margin: 4
+                });
+
+                // 等待二维码生成完成
+                setTimeout(() => {
+                    // 获取二维码canvas
+                    const qrCanvas = tempQR.querySelector('canvas');
+                    // 将二维码绘制到主canvas上
+                    ctx.drawImage(qrCanvas, 372, 1125, 325, 325);
+
+                    // 清理临时元素
+                    document.body.removeChild(tempQR);
+
+                    // 如果不是预览模式，则下载图片
+                    if (!isPreview) {
+                        const link = document.createElement('a');
+                        link.download = '请假条.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    }
+                }, 100);
+            }
+
+            // 设置背景图片地址
+            img.src = 'temp.png';
+        }
+
+        // 页面加载完成后设置默认值
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取今明两天的日期
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            // 格式化日期为YYYY-MM-DD
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            // 默认值配置
+            const defaultValues = {
+                studentName: '张三',
+                studentId: '20230001',
+                leaveType: '病假',
+                isLeaveSchool: '是',
+                leaveReason: '生病',
+                reasonDescription: '发烧',
+                destination: '家里',
+                startTime: formatDate(today),
+                endTime: formatDate(tomorrow),
+                period: '[1-2,3-4]',
+                reviewTeacher: '李四;'
+            };
+
+            // 设置默认值
+            for (const key in defaultValues) {
+                if (defaultValues.hasOwnProperty(key)) {
+                    const element = document.querySelector(`[name="${key}"]`);
+                    if (element) {
+                        element.value = defaultValues[key];
+                    }
+                }
+            }
+
+            // 添加表单变化监听
+            const form = document.getElementById('leaveForm');
+            const formInputs = form.querySelectorAll('input, select');
+            formInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    generateLeaveImage(true);  // 更新预览
+                });
+            });
+
+            // 初始预览
+            generateLeaveImage(true);
+
+            // 修改表单提交处理
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                generateLeaveImage(false);  // 生成并下载
+            });
+        });
+    </script>
+</body>
+
+</html>
