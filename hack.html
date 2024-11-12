@@ -234,7 +234,7 @@
             }
 
             params.append('reviewStatus', '已通过');
-            const baseUrl = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/${qfnuqj.html}`;
+            const baseUrl = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/qfnuqj.html`;
             const url = `${baseUrl}?${params.toString()}`;
 
             // 生成二维码 (保持原有逻辑但移除下载按钮)
@@ -283,7 +283,7 @@
                     params.append(pair[0], pair[1]);
                 }
                 params.append('reviewStatus', '已通过');
-                const baseUrl = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/${qfnuqj.html}`;
+                const baseUrl = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/qfnuqj.html`;
                 const url = `${baseUrl}?${params.toString()}`;
 
                 // 绘制文字
