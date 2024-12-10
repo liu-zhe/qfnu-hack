@@ -122,7 +122,8 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <!-- 使用 CDN 加载 qrcode.min.js -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 </head>
 
 <body>
@@ -150,8 +151,8 @@
                 <div class="form-group">
                     <label>请假类型：</label>
                     <select name="leaveType" required>
-                        <option value="病假">病假</option>
-                        <option value="事假">事假</option>
+                        <option value="短假">短假</option>
+                        <option value="长假">长假</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -198,6 +199,7 @@
                 <canvas id="previewCanvas"></canvas>
                 <div class="button-group">
                     <button class="btn btn-success" onclick="downloadImage()">下载请假条</button>
+                    <button class="btn btn-primary" onclick="copyImage()">复制请假条</button>
                 </div>
             </div>
         </div>
@@ -211,46 +213,32 @@
         // 修改下载功能
         function downloadImage() {
             const canvas = document.getElementById('previewCanvas');
-            const link = document.createElement('a');
-            link.download = '请假条.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            canvas.toBlob(blob => {
+                const link = document.createElement('a');
+                link.download = '请假条.png';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                URL.revokeObjectURL(link.href); // 释放内存
+            });
+        }
+
+        // 添加复制图片功能
+        function copyImage() {
+            const canvas = document.getElementById('previewCanvas');
+            canvas.toBlob(blob => {
+                const item = new ClipboardItem({ 'image/png': blob });
+                navigator.clipboard.write([item]).then(() => {
+                    alert('图片已复制到剪贴板');
+                }).catch(err => {
+                    console.error('复制失败: ', err);
+                });
+            });
         }
 
         // 修改提交处理代码
         document.getElementById('leaveForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const params = new URLSearchParams();
-
-            for (let pair of formData.entries()) {
-                if (pair[0].includes('time')) {
-                    const date = new Date(pair[1]);
-                    const dateString = date.toLocaleDateString('zh-CN');
-                    params.append(pair[0], dateString);
-                } else {
-                    params.append(pair[0], pair[1]);
-                }
-            }
-
-            params.append('reviewStatus', '已通过');
-            const baseUrl = `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/qfnuqj.html`;
-            const url = `${baseUrl}?${params.toString()}`;
-
-            // 生成二维码 (保持原有逻辑但移除下载按钮)
-            new QRCode(document.getElementById("qrcode"), {
-                text: url,
-                width: 512,
-                height: 512,
-                typeNumber: 5,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.L,
-                margin: 4
-            });
-
-            // 生成预览图
-            generateLeaveImage(true);
+            generateLeaveImage(false);  // 生成并下载
         });
 
         function generateLeaveImage(isPreview = false) {
@@ -271,7 +259,7 @@
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
                 // 设置文字样式
-                ctx.font = '35px Microsoft YaHei';
+                ctx.font = 'normal 35px Noto Sans CJK';
                 ctx.fillStyle = '#000';
 
                 // 获取表单数据
@@ -305,7 +293,7 @@
                 textItems.forEach(item => {
                     ctx.fillText(item.text, 322, item.y);
                 });
-
+                ctx.fillText(` ${formData.get('leaveType')}(${formData.get('startTime')})`, 160, 220);
                 // 创建临时二维码
                 const tempQR = document.createElement('div');
                 tempQR.style.display = 'none';
@@ -367,13 +355,13 @@
             const defaultValues = {
                 studentName: '张三',
                 studentId: '20230001',
-                leaveType: '病假',
-                isLeaveSchool: '是',
-                leaveReason: '生病',
+                leaveType: '短假',
+                isLeaveSchool: '否',
+                leaveReason: '病假',
                 reasonDescription: '发烧',
-                destination: '家里',
+                destination: '宿舍',
                 startTime: formatDate(today),
-                endTime: formatDate(tomorrow),
+                endTime: formatDate(today),
                 period: '[1-2,3-4]',
                 reviewTeacher: '李四;'
             };
