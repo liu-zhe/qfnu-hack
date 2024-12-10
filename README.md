@@ -41,4 +41,4 @@
 
 - 使用HTML5 Canvas绘图
 - qrcodejs生成二维码
-- 纯前端实现，无后端依赖# qfnuhack
+- 纯前端实现，无后端依赖
