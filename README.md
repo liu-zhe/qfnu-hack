@@ -1,5 +1,7 @@
 # QFNU请假条生成工具
 
+DEMO网址：[https://xuegong-qfnu.github.io/](https://xuegong-qfnu.github.io/)
+
 ⚠️ **免责声明**
 
 本工具仅供学习和测试使用，请遵守以下条款：
